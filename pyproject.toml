@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "LexAlyzer"
+version = "0.1.0"
+description = "Analyzes podcasts, writes out how many voices are detected and the percentage of talk time."
+authors = ["Steve Clement <steve@localhost.lu>"]
+license = "GPL v3"
+readme = "README.md"
+packages = [{include = "lex_analyzer"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+ipython = "^8.22.2"
+yt-dlp = "^2023.12.30"
+pyaudioanalysis = {git = "git@github.com:tyiannak/pyAudioAnalysis.git"}
+google-api-python-client = "^2.120.0"
+isodate = "^0.6.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
