@@ -1,6 +1,6 @@
 # LexAlyzer
 
-LexAlyzer will analyze a youtube video, or an entire channel with all videos and make speech statistics on who talked for how long.
+LexAlyzer (lex-analyzer) will analyze a youtube video, or an entire channel with all videos and make speech statistics on who talked for how long.
 
 # Step 0: Install deps and get environment ready
 
