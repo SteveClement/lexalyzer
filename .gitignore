@@ -1,6 +1,7 @@
 # Local ignores
 
 output/
+keys.py
 
 
 # Byte-compiled / optimized / DLL files
