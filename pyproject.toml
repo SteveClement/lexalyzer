@@ -15,6 +15,7 @@ pyaudioanalysis = {git = "git@github.com:tyiannak/pyAudioAnalysis.git"}
 google-api-python-client = "^2.120.0"
 isodate = "^0.6.1"
 my-voice-analysis = {git = "git@github.com:Shahabks/my-voice-analysis.git"}
+setuptools = "^69.1.1"
 
 
 [build-system]
