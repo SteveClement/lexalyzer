@@ -1,15 +1,60 @@
+"""
+Main code for the YouTube Audio analyzer.
+"""
 #!/usr/bin/env python
 import wave
 import os
-import sys
 from yt_dlp import YoutubeDL
 from googleapiclient.discovery import build
 import isodate
 from keys import api_key
+from pyAudioAnalysis import audioSegmentation as aS
 
 youtube = build('youtube', 'v3', developerKey=api_key)
 
+def detect_speakers_and_durations(file_path):
+    # Perform speaker diarization
+    [flagsInd, classesAll, acc, _] = aS.speaker_diarization(file_path, 0, plot_res=False)
+
+    # Initialize a dictionary to hold speaker durations
+    speaker_durations = {}
+
+    # Calculate the duration of each segment assuming a fixed window step in seconds (e.g., 0.2s as default in pyAudioAnalysis)
+    window_step = 0.2
+
+    for speaker_label in flagsInd:
+        if speaker_label not in speaker_durations:
+            speaker_durations[speaker_label] = window_step
+        else:
+            speaker_durations[speaker_label] += window_step
+
+    # Convert speaker labels to a more readable format
+    readable_speaker_durations = {f"Speaker {int(speaker) + 1}": duration for speaker, duration in speaker_durations.items()}
+
+    return readable_speaker_durations
+
+def video_already_downloaded(ydl_opts, video_url):
+    """Check if the video has already been downloaded based on yt-dlp options."""
+    with YoutubeDL(ydl_opts) as ydl:
+        # Fetch video info without downloading
+        info_dict = ydl.extract_info(video_url, download=False)
+        filename = ydl.prepare_filename(info_dict)
+        base = os.path.splitext(filename)[0] 
+        filename = base + '.wav'
+        print(f"Checking if {filename} exists: {os.path.exists(os.path.join(filename))}")
+        # Check if the file exists in the output directory
+        return [os.path.exists(os.path.join(filename)), filename]
+
 def get_channel_videos(channel_id):
+    """
+    Retrieves a list of videos from a YouTube channel.
+
+    Args:
+        channel_id (str): The ID of the YouTube channel.
+
+    Returns:
+        list: A list of video objects from the channel's upload playlist.
+    """
     # Get the upload playlist ID
     res = youtube.channels().list(id=channel_id, part='contentDetails').execute()
     playlist_id = res['items'][0]['contentDetails']['relatedPlaylists']['uploads']
@@ -28,6 +73,15 @@ def get_channel_videos(channel_id):
     return videos
 
 def print_video_durations(videos):
+    """
+    Prints the duration of each video in the given list of videos.
+
+    Args:
+        videos (list): A list of video objects.
+
+    Returns:
+        None
+    """
     for video in videos:
         video_id = video['snippet']['resourceId']['videoId']
         video_details = youtube.videos().list(id=video_id, part='contentDetails').execute()
@@ -52,6 +106,11 @@ def download_audio(video_url, output_path='output/'):
         }],
         'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
     }
+
+    alreadyDown, filename = video_already_downloaded(ydl_opts, video_url)
+    if alreadyDown:
+        print("Video has already been downloaded. Skipping download.")
+        return filename
 
     with YoutubeDL(ydl_opts) as ydl:
         res = ydl.download([video_url]) # res seems to be the exit code of the download process
@@ -123,5 +182,8 @@ if __name__ == '__main__':
     #    sys.exit(1)
 
     # video_url = sys.argv[1]
-    video_url = 'https://www.youtube.com/watch?v=eoXd76ONbVk'
-    download_audio(video_url)
+    video_url = 'https://www.youtube.com/watch?v=jrIJa2-niBM'
+    file_path = download_audio(video_url)
+    speaker_durations = detect_speakers_and_durations(file_path)
+    for speaker, duration in speaker_durations.items():
+        print(f"{speaker} talked for {duration:.2f} seconds")
