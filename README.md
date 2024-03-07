@@ -7,6 +7,10 @@ LexAlyzer (lex-analyzer) will analyze a youtube video, or an entire channel with
 * [Install poetry](https://python-poetry.org/docs/)
 
 ```
+sudo apt install pipx
+pipx install poetry
+git clone <repo>
+cd <repo>
 poetry install
 poetry run python main.py
 ```
