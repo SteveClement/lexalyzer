@@ -7,14 +7,22 @@ import os
 from yt_dlp import YoutubeDL
 from googleapiclient.discovery import build
 import isodate
-from keys import api_key
 from pyAudioAnalysis import audioSegmentation as aS
+
+from keys import api_key
 
 youtube = build('youtube', 'v3', developerKey=api_key)
 
 def detect_speakers_and_durations(file_path):
+    """
+        Detects speakers in an audio file and calculates their durations.
+
+        Returns:
+            dict: A dictionary containing the durations of each speaker in a more readable format.
+                The keys are in the format "Speaker <speaker_number>" and the values are the durations in seconds.
+    """
     # Perform speaker diarization
-    [flagsInd, classesAll, acc, _] = aS.speaker_diarization(file_path, 0, plot_res=False)
+    [flagsInd, classesAll, acc] = aS.speaker_diarization(file_path, 0, plot_res=False)
 
     # Initialize a dictionary to hold speaker durations
     speaker_durations = {}
@@ -56,7 +64,14 @@ def get_channel_videos(channel_id):
         list: A list of video objects from the channel's upload playlist.
     """
     # Get the upload playlist ID
-    res = youtube.channels().list(id=channel_id, part='contentDetails').execute()
+    try:
+        res = youtube.channels().list(id=channel_id, part='contentDetails').execute()
+        if res['pageInfo']['totalResults'] == 0:
+            print(f"Channel ID {channel_id} not found.")
+            return False
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    
     playlist_id = res['items'][0]['contentDetails']['relatedPlaylists']['uploads']
 
     videos = []
@@ -103,6 +118,9 @@ def download_audio(video_url, output_path='output/'):
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'wav',
             'preferredquality': '192',
+            'postprocessor_args': [
+            '-ac', '1'  # Set audio channels to 1 (mono)
+        ],
         }],
         'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
     }
@@ -114,7 +132,7 @@ def download_audio(video_url, output_path='output/'):
 
     with YoutubeDL(ydl_opts) as ydl:
         res = ydl.download([video_url]) # res seems to be the exit code of the download process
-        
+
 
 def symlink_audio(source, destination):
     try:
@@ -165,7 +183,10 @@ channel_id = 'UCfnpkeDIEkPvbI1JljqvyAg'  # Replace 'CHANNEL_ID' with the actual 
 channel_id = 'UCygEo8mY_HUD8DZb-xboxRg'  # Replace 'CHANNEL_ID' with the actual channel ID
 
 videos = get_channel_videos(channel_id)
-print_video_durations(videos)
+if not videos:
+    print("No videos found.")
+else:
+    print_video_durations(videos)
 
 # Example usage:
 #file_path = 'converted.wav'
@@ -182,8 +203,9 @@ if __name__ == '__main__':
     #    sys.exit(1)
 
     # video_url = sys.argv[1]
-    video_url = 'https://www.youtube.com/watch?v=jrIJa2-niBM'
-    file_path = download_audio(video_url)
+    #video_url = 'https://www.youtube.com/watch?v=jrIJa2-niBM'
+    #file_path = download_audio(video_url)
+    file_path="output/test.wav"
     speaker_durations = detect_speakers_and_durations(file_path)
     for speaker, duration in speaker_durations.items():
         print(f"{speaker} talked for {duration:.2f} seconds")
