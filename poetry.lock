@@ -461,7 +461,7 @@ python-versions = ">=3.7"
 [[package]]
 name = "my-voice-analysis"
 version = "0.7"
-description = ""
+description = "the analysis of voice (simultaneous speech) without the need of a transcription"
 category = "main"
 optional = false
 python-versions = "*"
