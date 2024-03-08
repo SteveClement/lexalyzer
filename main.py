@@ -9,9 +9,11 @@ from googleapiclient.discovery import build
 import isodate
 from pyAudioAnalysis import audioSegmentation as aS
 
-from keys import api_key
-
-youtube = build('youtube', 'v3', developerKey=api_key)
+try:
+    from keys import api_key
+    youtube = build('youtube', 'v3', developerKey=api_key)
+except IOError as e:
+    print(f"An error occurred: {e}")
 
 def detect_speakers_and_durations(file_path):
     """
@@ -87,7 +89,7 @@ def get_channel_videos(channel_id):
 
     return videos
 
-def print_video_durations(videos):
+def get_video(videos, mode='id'):
     """
     Prints the duration of each video in the given list of videos.
 
@@ -97,12 +99,20 @@ def print_video_durations(videos):
     Returns:
         None
     """
-    for video in videos:
-        video_id = video['snippet']['resourceId']['videoId']
-        video_details = youtube.videos().list(id=video_id, part='contentDetails').execute()
-        duration = video_details['items'][0]['contentDetails']['duration']
-        duration_in_seconds = isodate.parse_duration(duration).total_seconds()
-        print(f"Title: {video['snippet']['title']}, Duration: {duration_in_seconds} seconds, ID: {video_id}")
+    if mode == 'duration':
+        for video in videos:
+            video_id = video['snippet']['resourceId']['videoId']
+            video_details = youtube.videos().list(id=video_id, part='contentDetails').execute()
+            duration = video_details['items'][0]['contentDetails']['duration']
+            duration_in_seconds = isodate.parse_duration(duration).total_seconds()
+            print(f"Title: {video['snippet']['title']}, Duration: {duration_in_seconds} seconds, ID: {video_id}")
+    if mode == 'id':
+        video_ids = []
+        for video in videos:
+            video_id = video['snippet']['resourceId']['videoId']
+            video_ids.append(video_id)
+            print(f"Title: {video['snippet']['title']}, ID: {video_id}")
+        return video_ids
 
 
 def download_audio(video_url, output_path='output/'):
@@ -115,15 +125,18 @@ def download_audio(video_url, output_path='output/'):
     ydl_opts = {
         'format': 'bestaudio/best',
         'postprocessors': [{
-            'key': 'FFmpegExtractAudio',
-            'preferredcodec': 'wav',
-            'preferredquality': '192',
-            'postprocessor_args': [
-            '-ac', '1'  # Set audio channels to 1 (mono)
-        ],
-        }],
-        'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
+                'key': 'FFmpegExtractAudio',
+                'preferredcodec': 'wav',
+                'preferredquality': '192'
+                }],
+                'postprocessor_args': [
+                '-ac', '1'  # This line ensures the audio is mono
+                ],
+                'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
     }
+
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
 
     alreadyDown, filename = video_already_downloaded(ydl_opts, video_url)
     if alreadyDown:
@@ -135,11 +148,24 @@ def download_audio(video_url, output_path='output/'):
 
 
 def symlink_audio(source, destination):
+    """
+    Create a symbolic link from the source file to the destination file.
+
+    Args:
+        source (str): The path of the source file.
+        destination (str): The path of the destination file.
+
+    Raises:
+        OSError: If there is an error creating the symlink.
+
+    Returns:
+        None
+    """
     try:
-       os.symlink(source, destination)
-       print(f"Symlink created successfully from {source} to {destination}")
-    except OSError as e:
-       print(f"Failed to create symlink: {e}")
+        os.symlink(source, destination)
+        print(f"Symlink created successfully from {source} to {destination}")
+    except OSError as ex:
+        print(f"Failed to create symlink: {ex}")
 
 
 # Analyze wav and return sample rate, bit rate, and format details
@@ -179,14 +205,31 @@ def analyze_wav(file_path):
 
         return frame_rate, bit_rate, format_details
 
-channel_id = 'UCfnpkeDIEkPvbI1JljqvyAg'  # Replace 'CHANNEL_ID' with the actual channel ID
-channel_id = 'UCygEo8mY_HUD8DZb-xboxRg'  # Replace 'CHANNEL_ID' with the actual channel ID
+def search_channel_by_name(channel_name):
+    search_response = youtube.search().list(
+        q=channel_name,
+        type='channel',
+        part='id,snippet',
+        maxResults=1
+    ).execute()
 
-videos = get_channel_videos(channel_id)
-if not videos:
-    print("No videos found.")
-else:
-    print_video_durations(videos)
+    if search_response['items']:
+        channel_id = search_response['items'][0]['id']['channelId']
+        channel_title = search_response['items'][0]['snippet']['title']
+        print(f"Channel ID: {channel_id}, Channel Title: {channel_title}")
+        return channel_id
+    else:
+        print("Channel not found.")
+        return None
+
+##channel_id = 'UCfnpkeDIEkPvbI1JljqvyAg'  # Replace 'CHANNEL_ID' with the actual channel ID
+##channel_id = 'UCygEo8mY_HUD8DZb-xboxRg'  # Replace 'CHANNEL_ID' with the actual channel ID
+
+##videos = get_channel_videos(channel_id)
+##if not videos:
+##    print("No videos found.")
+##else:
+##    print_video_durations(videos)
 
 # Example usage:
 #file_path = 'converted.wav'
@@ -205,7 +248,16 @@ if __name__ == '__main__':
     # video_url = sys.argv[1]
     #video_url = 'https://www.youtube.com/watch?v=jrIJa2-niBM'
     #file_path = download_audio(video_url)
-    file_path="output/test.wav"
-    speaker_durations = detect_speakers_and_durations(file_path)
-    for speaker, duration in speaker_durations.items():
-        print(f"{speaker} talked for {duration:.2f} seconds")
+    #channel_name = 'Klonter77'  # This should be the name or a part of the custom URL
+
+    channel_name = '@LexFridman'  # Replace 'CHANNEL_ID' with the actual channel ID
+    channel_id = search_channel_by_name(channel_name)
+    videos = get_video(get_channel_videos(search_channel_by_name(channel_name)), mode='id')
+
+    for id in videos:
+        download_audio(id, output_path='output/LexFridman/')    
+
+    #file_path="output/test.wav"
+    #speaker_durations = detect_speakers_and_durations(file_path)
+    #for speaker, duration in speaker_durations.items():
+    #    print(f"{speaker} talked for {duration:.2f} seconds")
