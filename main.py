@@ -15,6 +15,8 @@ try:
 except IOError as e:
     print(f"An error occurred: {e}")
 
+debug=False
+
 def detect_speakers_and_durations(file_path):
     """
         Detects speakers in an audio file and calculates their durations.
@@ -51,7 +53,7 @@ def video_already_downloaded(ydl_opts, video_url):
         filename = ydl.prepare_filename(info_dict)
         base = os.path.splitext(filename)[0] 
         filename = base + '.wav'
-        print(f"Checking if {filename} exists: {os.path.exists(os.path.join(filename))}")
+        if debug: print(f"Checking if {filename} exists: {os.path.exists(os.path.join(filename))}")
         # Check if the file exists in the output directory
         return [os.path.exists(os.path.join(filename)), filename]
 
@@ -73,7 +75,7 @@ def get_channel_videos(channel_id):
             return False
     except Exception as e:
         print(f"An error occurred: {e}")
-    
+
     playlist_id = res['items'][0]['contentDetails']['relatedPlaylists']['uploads']
 
     videos = []
@@ -111,7 +113,7 @@ def get_video(videos, mode='id'):
         for video in videos:
             video_id = video['snippet']['resourceId']['videoId']
             video_ids.append(video_id)
-            print(f"Title: {video['snippet']['title']}, ID: {video_id}")
+            if debug: print(f"Title: {video['snippet']['title']}, ID: {video_id}")
         return video_ids
 
 
@@ -124,6 +126,8 @@ def download_audio(video_url, output_path='output/'):
     """
     ydl_opts = {
         'format': 'bestaudio/best',
+        'quiet': True,  # Suppresses most of the console output
+        'no_warnings': True,  # Suppresses warning messages
         'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'wav',
@@ -140,7 +144,7 @@ def download_audio(video_url, output_path='output/'):
 
     alreadyDown, filename = video_already_downloaded(ydl_opts, video_url)
     if alreadyDown:
-        print("Video has already been downloaded. Skipping download.")
+        if debug: print("Video has already been downloaded. Skipping download.")
         return filename
 
     with YoutubeDL(ydl_opts) as ydl:
@@ -216,14 +220,11 @@ def search_channel_by_name(channel_name):
     if search_response['items']:
         channel_id = search_response['items'][0]['id']['channelId']
         channel_title = search_response['items'][0]['snippet']['title']
-        print(f"Channel ID: {channel_id}, Channel Title: {channel_title}")
+        if debug: print(f"Channel ID: {channel_id}, Channel Title: {channel_title}")
         return channel_id
     else:
         print("Channel not found.")
         return None
-
-##channel_id = 'UCfnpkeDIEkPvbI1JljqvyAg'  # Replace 'CHANNEL_ID' with the actual channel ID
-##channel_id = 'UCygEo8mY_HUD8DZb-xboxRg'  # Replace 'CHANNEL_ID' with the actual channel ID
 
 ##videos = get_channel_videos(channel_id)
 ##if not videos:
