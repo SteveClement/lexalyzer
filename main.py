@@ -16,8 +16,9 @@ from pyAudioAnalysis import audioSegmentation as aS
 try:
     from keys import API_KEY
     youtube = build("youtube", "v3", developerKey=API_KEY)
-except IOError as error:
-    print(f"An error occurred: {error}")
+except ModuleNotFoundError as error:
+    print(f"An error occurred: {error} - Did you copy keys.py.sample to keys.py?")
+    sys.exit(1)
 
 DEBUG = False
 
