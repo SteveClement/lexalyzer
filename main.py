@@ -11,13 +11,12 @@ import isodate
 from pyAudioAnalysis import audioSegmentation as aS
 
 try:
-    from keys import api_key
-
-    youtube = build("youtube", "v3", developerKey=api_key)
+    from keys import API_KEY
+    youtube = build("youtube", "v3", developerKey=API_KEY)
 except IOError as error:
     print(f"An error occurred: {error}")
 
-debug = False
+DEBUG = False
 
 
 def detect_speakers_and_durations(file_path):
@@ -62,7 +61,7 @@ def video_already_downloaded(ydl_opts, video_url):
         filename = ydl.prepare_filename(info_dict)
         base = os.path.splitext(filename)[0]
         filename = base + ".wav"
-        if debug:
+        if DEBUG:
             print(
                 f"Checking if {filename} exists: {os.path.exists(os.path.join(filename))}"
             )
@@ -141,7 +140,7 @@ def get_video(videos, mode="id"):
         for video in videos:
             video_id = video["snippet"]["resourceId"]["videoId"]
             video_ids.append(video_id)
-            if debug:
+            if DEBUG:
                 print(f"Title: {video['snippet']['title']}, ID: {video_id}")
         return video_ids
 
@@ -173,7 +172,7 @@ def download_audio(video_url, output_path="output/"):
 
     already_down, filename = video_already_downloaded(ydl_opts, video_url)
     if already_down:
-        if debug:
+        if DEBUG:
             print("Video has already been downloaded. Skipping download.")
         return filename
 
@@ -262,7 +261,7 @@ def search_channel_by_name(channel_name):
     if search_response["items"]:
         channel_id = search_response["items"][0]["id"]["channelId"]
         channel_title = search_response["items"][0]["snippet"]["title"]
-        if debug:
+        if DEBUG:
             print(f"Channel ID: {channel_id}, Channel Title: {channel_title}")
         return channel_id
     else:
