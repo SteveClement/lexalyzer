@@ -1,7 +1,7 @@
 """
 Main code for the YouTube Audio analyzer.
 """
-
+#pylint:disable=E1101
 #!/usr/bin/env python
 import wave
 import os
@@ -12,6 +12,7 @@ from pyAudioAnalysis import audioSegmentation as aS
 
 try:
     from keys import API_KEY
+
     youtube = build("youtube", "v3", developerKey=API_KEY)
 except IOError as error:
     print(f"An error occurred: {error}")
@@ -25,12 +26,14 @@ def detect_speakers_and_durations(file_path):
 
     Returns:
         dict: A dictionary containing the durations of each speaker in a more readable format.
-            The keys are in the format "Speaker <speaker_number>" and the values 
+            The keys are in the format "Speaker <speaker_number>" and the values
             are the durations in seconds.
     """
     # Perform speaker diarization
-    [flags_ind, classesAll, acc] = aS.speaker_diarization(file_path, 0, plot_res=False)
+    [flags_ind, classes_all, acc] = aS.speaker_diarization(file_path, 0, plot_res=False)
 
+    if DEBUG:
+        print(f"Speaker flags: {flags_ind}, Classes: {classes_all}", f"Accuracy: {acc}")
     # Initialize a dictionary to hold speaker durations
     speaker_durations = {}
 
@@ -177,10 +180,17 @@ def download_audio(video_url, output_path="output/"):
         return filename
 
     with YoutubeDL(ydl_opts) as ydl:
-        res = ydl.download(
-            [video_url]
-        )  # res seems to be the exit code of the download process
-        return None
+        try:
+            res = ydl.download(
+                [video_url]
+            )  # res seems to be the exit code of the download process
+            if res != 0:
+                print(f"An error occurred while downloading video: {res}")
+                return None
+            return None
+        except IOError as e: # NOQA
+            print(f"An error occurred: {e}")
+            return None
 
 
 def symlink_audio(source, destination):
@@ -294,13 +304,14 @@ if __name__ == "__main__":
 
     CHANNEL_NAME = "@LexFridman"  # This should be the name or a part of the custom URL
     OUTPUT_PATH = "output/"
-    channel_id = search_channel_by_name(CHANNEL_NAME)
-    videos = get_video(
+    CHANNEL_ID = search_channel_by_name(CHANNEL_NAME)
+
+    VIDEOS = get_video(
         get_channel_videos(search_channel_by_name(CHANNEL_NAME)), mode="id"
     )
 
-    for vid_id in videos:
-        download_audio(vid_id, output_path=f"{OUTPUT_PATH}+{CHANNEL_NAME}/")
+    for vid_id in VIDEOS:
+        download_audio(vid_id, output_path=f"{OUTPUT_PATH}{CHANNEL_NAME}/")
 
     # file_path="output/test.wav"
     # speaker_durations = detect_speakers_and_durations(file_path)
