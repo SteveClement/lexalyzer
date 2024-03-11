@@ -5,20 +5,44 @@ Main code for the YouTube Audio analyzer.
 #!/usr/bin/env python
 import wave
 import os
+import shutil
+import sys
+import isodate
+
 from yt_dlp import YoutubeDL
 from googleapiclient.discovery import build
-import isodate
 from pyAudioAnalysis import audioSegmentation as aS
 
 try:
     from keys import API_KEY
-
     youtube = build("youtube", "v3", developerKey=API_KEY)
 except IOError as error:
     print(f"An error occurred: {error}")
 
 DEBUG = False
 
+def check_disk_space(threshold):
+    """
+    Checks the available disk space and returns False if it is below the specified threshold.
+
+    Args:
+        threshold (float): The minimum disk space threshold as a percentage.
+
+    Returns:
+        bool: False if the available disk space is below the threshold, True otherwise.
+    """
+
+    total, used, free = shutil.disk_usage("/")
+    available_space_percentage = (free / total) * 100
+
+    if DEBUG:
+        print(f"Available space: {available_space_percentage:.2f}%")
+        print(f"Used space: {used / (2**30):.2f} GB")
+
+    if available_space_percentage < threshold:
+        return False
+    else:
+        return True
 
 def detect_speakers_and_durations(file_path):
     """
@@ -155,6 +179,11 @@ def download_audio(video_url, output_path="output/"):
     video_url (str): URL of the YouTube video.
     output_path (str): Directory to save the downloaded audio file.
     """
+
+    if not check_disk_space(10):
+        print("Disk space is below threshold. Aborting download.")
+        sys.exit(31)
+    
     ydl_opts = {
         "format": "bestaudio/best",
         "quiet": True,  # Suppresses most of the console output
