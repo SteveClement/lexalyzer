@@ -1,9 +1,17 @@
 import os
+import shutil
 import unittest
-from main import video_already_downloaded
+import wave
+from pydub import AudioSegment
+from main import video_already_downloaded, search_channel_by_name, check_disk_space, \
+                 get_channel_videos, get_video, download_audio, symlink_audio, analyze_wav
 
 class TestVideoAlreadyDownloaded(unittest.TestCase):
     def test_existing_file(self):
+        """
+        Test case to check if video_already_downloaded function correctly
+        identifies an existing file.
+        """
         # Create a dummy file
         filename = "test_file.wav"
         open(filename, "w").close()
@@ -20,6 +28,10 @@ class TestVideoAlreadyDownloaded(unittest.TestCase):
         os.remove(filename)
 
     def test_non_existing_file(self):
+        """
+        Test case to check if video_already_downloaded function correctly
+        identifies a non-existing file.
+        """
         # Call the function with a non-existing file
         ydl_opts = {}
         video_url = "https://www.youtube.com/watch?v=def456"
@@ -28,14 +40,12 @@ class TestVideoAlreadyDownloaded(unittest.TestCase):
         # Assert that the file does not exist and the filename is correct
         self.assertEqual(result, [False, "def456.wav"])
 
-if __name__ == "__main__":
-    unittest.main()import os
-import shutil
-import unittest
-from main import check_disk_space
-
 class TestCheckDiskSpace(unittest.TestCase):
     def test_available_space_below_threshold(self):
+        """
+        Test case to check if check_disk_space function correctly
+        identifies available space below the threshold.
+        """
         # Set the threshold to 80%
         threshold = 80
 
@@ -52,6 +62,10 @@ class TestCheckDiskSpace(unittest.TestCase):
         self.assertFalse(result)
 
     def test_available_space_above_threshold(self):
+        """
+        Test case to check if check_disk_space function correctly
+        identifies available space above the threshold.
+        """
         # Set the threshold to 80%
         threshold = 80
 
@@ -67,39 +81,12 @@ class TestCheckDiskSpace(unittest.TestCase):
         # Assert that the result is True
         self.assertTrue(result)
 
-if __name__ == "__main__":
-    unittest.main()import os
-import unittest
-from main import video_already_downloaded, get_channel_videos
-
-class TestVideoAlreadyDownloaded(unittest.TestCase):
-    def test_existing_file(self):
-        # Create a dummy file
-        filename = "test_file.wav"
-        open(filename, "w").close()
-
-        # Call the function with the dummy file
-        ydl_opts = {}
-        video_url = "https://www.youtube.com/watch?v=abc123"
-        result = video_already_downloaded(ydl_opts, video_url)
-
-        # Assert that the file exists and the filename is correct
-        self.assertEqual(result, [True, filename])
-
-        # Clean up the dummy file
-        os.remove(filename)
-
-    def test_non_existing_file(self):
-        # Call the function with a non-existing file
-        ydl_opts = {}
-        video_url = "https://www.youtube.com/watch?v=def456"
-        result = video_already_downloaded(ydl_opts, video_url)
-
-        # Assert that the file does not exist and the filename is correct
-        self.assertEqual(result, [False, "def456.wav"])
-
 class TestGetChannelVideos(unittest.TestCase):
     def test_valid_channel_id(self):
+        """
+        Test case to check if get_channel_videos function correctly
+        returns a list of videos for a valid channel ID.
+        """
         # Call the function with a valid channel ID
         channel_id = "UC1234567890"
         videos = get_channel_videos(channel_id)
@@ -108,6 +95,10 @@ class TestGetChannelVideos(unittest.TestCase):
         self.assertIsInstance(videos, list)
 
     def test_invalid_channel_id(self):
+        """
+        Test case to check if get_channel_videos function correctly
+        returns False for an invalid channel ID.
+        """
         # Call the function with an invalid channel ID
         channel_id = "invalid_channel_id"
         videos = get_channel_videos(channel_id)
@@ -115,12 +106,12 @@ class TestGetChannelVideos(unittest.TestCase):
         # Assert that the returned value is False
         self.assertEqual(videos, False)
 
-if __name__ == "__main__":
-    unittest.main()import unittest
-from main import get_video
-
 class TestGetVideo(unittest.TestCase):
     def test_get_video_with_duration_mode(self):
+        """
+        Test case to check if get_video function correctly
+        prints the expected output in duration mode.
+        """
         # Create a dummy list of video objects
         videos = [
             {
@@ -149,6 +140,9 @@ class TestGetVideo(unittest.TestCase):
         self.assertEqual(1, 1)
 
     def test_get_video_with_id_mode(self):
+        """
+        Test case to check if get_video function correctly returns the video IDs in id mode.
+        """
         # Create a dummy list of video objects
         videos = [
             {
@@ -175,13 +169,11 @@ class TestGetVideo(unittest.TestCase):
         # Assert that the returned video IDs are correct
         self.assertEqual(result, ["abc123", "def456"])
 
-if __name__ == "__main__":
-    unittest.main()import os
-import unittest
-from main import download_audio
-
 class TestDownloadAudio(unittest.TestCase):
     def test_download_existing_video(self):
+        """
+        Test case to check if download_audio function correctly downloads an existing video.
+        """
         # Call the function with an existing video URL
         video_url = "https://www.youtube.com/watch?v=abc123"
         result = download_audio(video_url)
@@ -194,6 +186,9 @@ class TestDownloadAudio(unittest.TestCase):
         os.remove(result)
 
     def test_download_non_existing_video(self):
+        """
+        Test case to check if download_audio function correctly handles a non-existing video.
+        """
         # Call the function with a non-existing video URL
         video_url = "https://www.youtube.com/watch?v=def456"
         result = download_audio(video_url)
@@ -201,39 +196,11 @@ class TestDownloadAudio(unittest.TestCase):
         # Assert that the result is None
         self.assertIsNone(result)
 
-if __name__ == "__main__":
-    unittest.main()import os
-import unittest
-from main import video_already_downloaded, symlink_audio
-
-class TestVideoAlreadyDownloaded(unittest.TestCase):
-    def test_existing_file(self):
-        # Create a dummy file
-        filename = "test_file.wav"
-        open(filename, "w").close()
-
-        # Call the function with the dummy file
-        ydl_opts = {}
-        video_url = "https://www.youtube.com/watch?v=abc123"
-        result = video_already_downloaded(ydl_opts, video_url)
-
-        # Assert that the file exists and the filename is correct
-        self.assertEqual(result, [True, filename])
-
-        # Clean up the dummy file
-        os.remove(filename)
-
-    def test_non_existing_file(self):
-        # Call the function with a non-existing file
-        ydl_opts = {}
-        video_url = "https://www.youtube.com/watch?v=def456"
-        result = video_already_downloaded(ydl_opts, video_url)
-
-        # Assert that the file does not exist and the filename is correct
-        self.assertEqual(result, [False, "def456.wav"])
-
 class TestSymlinkAudio(unittest.TestCase):
     def test_symlink_creation(self):
+        """
+        Test case to check if symlink_audio function correctly creates a symlink.
+        """
         # Create a dummy source file
         source = "source_file.wav"
         open(source, "w").close()
@@ -251,14 +218,11 @@ class TestSymlinkAudio(unittest.TestCase):
         os.remove(source)
         os.remove(destination)
 
-if __name__ == "__main__":
-    unittest.main()import os
-import unittest
-import wave
-from main import analyze_wav
-
 class TestAnalyzeWav(unittest.TestCase):
     def test_analyze_wav(self):
+        """
+        Test case to check if analyze_wav function correctly analyzes a WAV file.
+        """
         # Create a dummy WAV file
         filename = "test_file.wav"
         with wave.open(filename, "w") as wav_file:
@@ -282,39 +246,16 @@ class TestAnalyzeWav(unittest.TestCase):
         # Clean up the dummy file
         os.remove(filename)
 
-if __name__ == "__main__":
-    unittest.main()import os
-import unittest
-from main import video_already_downloaded, search_channel_by_name
-
-class TestVideoAlreadyDownloaded(unittest.TestCase):
-    def test_existing_file(self):
-        # Create a dummy file
-        filename = "test_file.wav"
-        open(filename, "w").close()
-
-        # Call the function with the dummy file
-        ydl_opts = {}
-        video_url = "https://www.youtube.com/watch?v=abc123"
-        result = video_already_downloaded(ydl_opts, video_url)
-
-        # Assert that the file exists and the filename is correct
-        self.assertEqual(result, [True, filename])
-
-        # Clean up the dummy file
-        os.remove(filename)
-
-    def test_non_existing_file(self):
-        # Call the function with a non-existing file
-        ydl_opts = {}
-        video_url = "https://www.youtube.com/watch?v=def456"
-        result = video_already_downloaded(ydl_opts, video_url)
-
-        # Assert that the file does not exist and the filename is correct
-        self.assertEqual(result, [False, "def456.wav"])
-
 class TestSearchChannelByName(unittest.TestCase):
+    """
+    Test case class for testing the search_channel_by_name function.
+    """
+
     def test_existing_channel(self):
+        """
+        Test case to check if search_channel_by_name function correctly
+        returns the channel ID for an existing channel.
+        """
         # Call the function with an existing channel name
         channel_name = "MyChannel"
         result = search_channel_by_name(channel_name)
@@ -323,12 +264,39 @@ class TestSearchChannelByName(unittest.TestCase):
         self.assertIsNotNone(result)
 
     def test_non_existing_channel(self):
+        """
+        Test case to check if search_channel_by_name function correctly
+        returns None for a non-existing channel.
+        """
         # Call the function with a non-existing channel name
         channel_name = "NonExistingChannel"
         result = search_channel_by_name(channel_name)
 
         # Assert that None is returned
         self.assertIsNone(result)
+
+if __name__ == "__main__":
+    unittest.main()
+
+class TestPreprocessWav(unittest.TestCase):
+    def test_preprocess_wav(self):
+        """
+        Test case to check if preprocess_wav function correctly preprocesses a WAV file.
+        """
+        # Create a dummy WAV file
+        filename = "test_file.wav"
+        sound = AudioSegment.silent(duration=1000)  # Create a silent audio segment
+        sound.export(filename, format="wav")
+
+        # Call the function with the dummy file
+        processed_file_path = preprocess_wav(filename)
+
+        # Assert that the processed file exists
+        self.assertTrue(os.path.exists(processed_file_path))
+
+        # Clean up the dummy files
+        os.remove(filename)
+        os.remove(processed_file_path)
 
 if __name__ == "__main__":
     unittest.main()
