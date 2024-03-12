@@ -12,6 +12,7 @@ import isodate
 from yt_dlp import YoutubeDL
 from googleapiclient.discovery import build
 from pyAudioAnalysis import audioSegmentation as aS
+from pydub import AudioSegment
 
 try:
     from keys import API_KEY
@@ -21,6 +22,23 @@ except ModuleNotFoundError as error:
     sys.exit(1)
 
 DEBUG = False
+
+def preprocess_wav(file_path):
+    """
+    Preprocesses a WAV file by converting it to mono and setting the frame rate to 44.1 kHz.
+
+    Args:
+        file_path (str): The path to the input WAV file.
+
+    Returns:
+        str: The path to the processed WAV file.
+    """
+    sound = AudioSegment.from_wav(file_path)
+    sound = sound.set_channels(1)  # Convert to mono
+    sound = sound.set_frame_rate(44100)  # Convert to 44.1 kHz
+    processed_file_path = "processed_" + file_path
+    sound.export(processed_file_path, format="wav")
+    return processed_file_path
 
 def check_disk_space(threshold):
     """
