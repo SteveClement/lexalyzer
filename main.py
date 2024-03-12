@@ -8,6 +8,8 @@ import os
 import shutil
 import sys
 import isodate
+import librosa
+import numpy as np
 
 from yt_dlp import YoutubeDL
 from googleapiclient.discovery import build
@@ -206,7 +208,7 @@ def download_audio(video_url, output_path="output/", count=-1):
     if not check_disk_space(10):
         print("Disk space is below threshold. Aborting download.")
         sys.exit(31)
-    
+
     ydl_opts = {
         "format": "bestaudio/best",
         "quiet": True,  # Suppresses most of the console output
@@ -335,6 +337,38 @@ def search_channel_by_name(channel_name):
         print("Channel not found.")
         return None
 
+def extract_features(file_path):
+    """
+    Extracts features from an audio file using MFCC.
+
+    Parameters:
+    file_path (str): The path to the audio file.
+
+    Returns:
+    numpy.ndarray: The mean MFCCs (Mel-frequency cepstral coefficients) of the audio file.
+    """
+    y, sr = librosa.load(file_path, sr=None)
+    mfccs = librosa.feature.mfcc(y=y, sr=sr)
+    return np.mean(mfccs.T, axis=0)
+
+def diarize(file_path):
+    """
+    Perform speaker diarization on an audio file.
+
+    Args:
+        file_path (str): The path to the audio file.
+
+    Returns:
+        tuple: A tuple containing the speaker flags and classes.
+
+    """
+    [flags, classes, acc] = aS.speaker_diarization(file_path,
+                                                   n_speakers=2,
+                                                   mid_window=1,
+                                                   mid_step=0.1,
+                                                   short_window=0.05,
+                                                   lda_dim=0)
+    return flags, classes, acc
 
 ##videos = get_channel_videos(channel_id)
 ##if not videos:
