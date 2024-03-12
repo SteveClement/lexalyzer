@@ -173,12 +173,16 @@ def get_video(videos, mode="id"):
         return video_ids
 
 
-def download_audio(video_url, output_path="output/"):
+def download_audio(video_url, output_path="output/", count=-1):
     """Downloads audio from the given video URL using yt-dlp.
 
     Args:
     video_url (str): URL of the YouTube video.
     output_path (str): Directory to save the downloaded audio file.
+    count (int): Number of times to download the audio. -1 for infinite.
+
+    Returns:
+    str or None: The path of the downloaded audio file if successful, None otherwise.
     """
 
     if not check_disk_space(10):
@@ -209,18 +213,23 @@ def download_audio(video_url, output_path="output/"):
             print("Video has already been downloaded. Skipping download.")
         return filename
 
-    with YoutubeDL(ydl_opts) as ydl:
-        try:
-            res = ydl.download(
-                [video_url]
-            )  # res seems to be the exit code of the download process
-            if res != 0:
-                print(f"An error occurred while downloading video: {res}")
+    while count != 0:
+        with YoutubeDL(ydl_opts) as ydl:
+            try:
+                res = ydl.download(
+                    [video_url]
+                )  # res seems to be the exit code of the download process
+                if res != 0:
+                    print(f"An error occurred while downloading video: {res}")
+                    return None
+                count -= 1
+                if count == 0:
+                    break
+            except IOError as e:
+                print(f"An error occurred: {e}")
                 return None
-            return None
-        except IOError as e: # NOQA
-            print(f"An error occurred: {e}")
-            return None
+
+    return None
 
 
 def symlink_audio(source, destination):
@@ -341,7 +350,7 @@ if __name__ == "__main__":
     )
 
     for vid_id in VIDEOS:
-        download_audio(vid_id, output_path=f"{OUTPUT_PATH}{CHANNEL_NAME}/")
+        download_audio(vid_id, output_path=f"{OUTPUT_PATH}{CHANNEL_NAME}/", count=10)
 
     # file_path="output/test.wav"
     # speaker_durations = detect_speakers_and_durations(file_path)
