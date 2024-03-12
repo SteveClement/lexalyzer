@@ -1,12 +1,20 @@
+"""
+Main tests for the YouTube Audio analyzer.
+"""
 import os
 import shutil
 import unittest
 import wave
 from pydub import AudioSegment
 from main import video_already_downloaded, search_channel_by_name, check_disk_space, \
-                 get_channel_videos, get_video, download_audio, symlink_audio, analyze_wav
+                 get_channel_videos, get_video, download_audio, symlink_audio, \
+                 analyze_wav, preprocess_wav
 
 class TestVideoAlreadyDownloaded(unittest.TestCase):
+    """
+    A test case class to test the functionality of the video_already_downloaded function.
+    """
+
     def test_existing_file(self):
         """
         Test case to check if video_already_downloaded function correctly
@@ -14,7 +22,8 @@ class TestVideoAlreadyDownloaded(unittest.TestCase):
         """
         # Create a dummy file
         filename = "test_file.wav"
-        open(filename, "w").close()
+        with open(filename, "w", encoding="utf-8").close() as _:
+            pass
 
         # Call the function with the dummy file
         ydl_opts = {}
@@ -41,6 +50,10 @@ class TestVideoAlreadyDownloaded(unittest.TestCase):
         self.assertEqual(result, [False, "def456.wav"])
 
 class TestCheckDiskSpace(unittest.TestCase):
+    """
+    A test suite for the check_disk_space function.
+    """
+
     def test_available_space_below_threshold(self):
         """
         Test case to check if check_disk_space function correctly
@@ -82,6 +95,10 @@ class TestCheckDiskSpace(unittest.TestCase):
         self.assertTrue(result)
 
 class TestGetChannelVideos(unittest.TestCase):
+    """
+    A test case class for testing the `get_channel_videos` function.
+    """
+
     def test_valid_channel_id(self):
         """
         Test case to check if get_channel_videos function correctly
@@ -107,6 +124,10 @@ class TestGetChannelVideos(unittest.TestCase):
         self.assertEqual(videos, False)
 
 class TestGetVideo(unittest.TestCase):
+    """
+    Test case class for testing the get_video function.
+    """
+
     def test_get_video_with_duration_mode(self):
         """
         Test case to check if get_video function correctly
@@ -170,6 +191,10 @@ class TestGetVideo(unittest.TestCase):
         self.assertEqual(result, ["abc123", "def456"])
 
 class TestDownloadAudio(unittest.TestCase):
+    """
+    A test case class for testing the download_audio function.
+    """
+
     def test_download_existing_video(self):
         """
         Test case to check if download_audio function correctly downloads an existing video.
@@ -197,13 +222,18 @@ class TestDownloadAudio(unittest.TestCase):
         self.assertIsNone(result)
 
 class TestSymlinkAudio(unittest.TestCase):
+    """
+    A test case class to test the functionality of the symlink_audio function.
+    """
+
     def test_symlink_creation(self):
         """
         Test case to check if symlink_audio function correctly creates a symlink.
         """
         # Create a dummy source file
         source = "source_file.wav"
-        open(source, "w").close()
+        with open(source, "w", encoding="utf-8").close() as _:
+            pass
 
         # Create a dummy destination file
         destination = "destination_file.wav"
@@ -219,6 +249,10 @@ class TestSymlinkAudio(unittest.TestCase):
         os.remove(destination)
 
 class TestAnalyzeWav(unittest.TestCase):
+    """
+    Test case class for testing the analyze_wav function.
+    """
+
     def test_analyze_wav(self):
         """
         Test case to check if analyze_wav function correctly analyzes a WAV file.
@@ -275,10 +309,11 @@ class TestSearchChannelByName(unittest.TestCase):
         # Assert that None is returned
         self.assertIsNone(result)
 
-if __name__ == "__main__":
-    unittest.main()
-
 class TestPreprocessWav(unittest.TestCase):
+    """
+    Test case class for testing the preprocess_wav function.
+    """
+
     def test_preprocess_wav(self):
         """
         Test case to check if preprocess_wav function correctly preprocesses a WAV file.
