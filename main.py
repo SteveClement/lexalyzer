@@ -7,9 +7,11 @@ import wave
 import os
 import shutil
 import sys
+import hashlib
+import json
+
 import isodate
 import librosa
-import hashlib
 import numpy as np
 
 from yt_dlp import YoutubeDL
@@ -26,7 +28,6 @@ except ModuleNotFoundError as error:
 
 DEBUG = False
 
-import hashlib
 
 def hash_filename(filename):
     """
@@ -46,6 +47,37 @@ def hash_filename(filename):
     # Return the hex digest of the hash
     return hasher.hexdigest()
 
+
+def file_info_to_json(filename, hashed_filename, file_size, file_hash, format_details):
+    """
+    Converts file information to JSON format and writes it to a file.
+
+    Args:
+        filename (str): The original filename.
+        hashed_filename (str): The hashed filename.
+        file_size (int): The size of the file in bytes.
+        file_hash (str): The hash value of the file.
+        format_details (dict): A dictionary containing format details of the file.
+
+    Returns:
+        None
+    """
+    output_file = hashed_filename + '.json'
+    # Data to be written to the JSON file
+    data = {
+        'original_filename': filename,
+        'hashed_filename': hashed_filename,
+        'file_size': file_size,
+        'file_hash': file_hash,
+        'channels': format_details['channels'],
+        'sample_rate': format_details['sample_rate'],
+        'duration': format_details['duration'],
+        'file_name': format_details['file_name']
+    }
+    # Write the data to a JSON file
+    with open(output_file, 'w', encoding='utf-8') as f:
+        json.dump(data, f, indent=4)
+
 def preprocess_wav(file_path):
     """
     Preprocesses a WAV file by converting it to mono and setting the frame rate to 44.1 kHz.
@@ -62,6 +94,7 @@ def preprocess_wav(file_path):
     processed_file_path = "processed_" + file_path
     sound.export(processed_file_path, format="wav")
     return processed_file_path
+
 
 def check_disk_space(threshold):
     """
@@ -85,6 +118,7 @@ def check_disk_space(threshold):
         return False
     else:
         return True
+
 
 def detect_speakers_and_durations(file_path):
     """
@@ -204,6 +238,8 @@ def get_video(videos, mode="id"):
                 f"Title: {video['snippet']['title']}, \
                 Duration: {duration_in_seconds} seconds, ID: {video_id}"
             )
+        return None
+
     if mode == "id":
         video_ids = []
         for video in videos:
@@ -294,42 +330,38 @@ def symlink_audio(source, destination):
         print(f"Failed to create symlink: {ex}")
 
 
-# Analyze wav and return sample rate, bit rate, and format details
 def analyze_wav(file_path):
     """
-    Analyzes a WAV file and returns the frame rate, bit rate, and format details.
+    Analyzes a WAV file and returns its format details.
 
-    Parameters:
-    file_path (str): The path to the WAV file.
+    Args:
+        file_path (str): The path to the WAV file.
 
     Returns:
-    tuple: A tuple containing the frame rate, bit rate, and format details.
-
+        dict: A dictionary containing the format details of the WAV file, including the number of channels,
+              sample rate, duration in seconds, and file name.
     """
     # Open the WAV file
     with wave.open(file_path, "rb") as wav_file:
         # Extract audio parameters
         n_channels = wav_file.getnchannels()  # Number of channels
-        sample_width = wav_file.getsampwidth()  # Sample width in bytes
         frame_rate = wav_file.getframerate()  # Sample rate
         n_frames = wav_file.getnframes()  # Number of frames
 
         # Calculate duration in seconds
         duration = n_frames / frame_rate
 
-        # Calculate bit rate
-        bit_rate = frame_rate * sample_width * 8 * n_channels  # in bits per second
+        # Extract file name
+        file_name = os.path.basename(file_path)
 
         # Format details
         format_details = {
-            "Number of Channels": n_channels,
-            "Sample Width (bytes)": sample_width,
-            "Frame Rate / Sample Rate (Hz)": frame_rate,
-            "Number of Frames": n_frames,
-            "Duration (seconds)": duration,
+            "channels": n_channels,
+            "sample_rate": frame_rate,
+            "duration": duration,
+            "file_name": file_name
         }
-
-        return frame_rate, bit_rate, format_details
+        return format_details
 
 
 def search_channel_by_name(channel_name):
@@ -358,6 +390,7 @@ def search_channel_by_name(channel_name):
         print("Channel not found.")
         return None
 
+
 def extract_features(file_path):
     """
     Extracts features from an audio file using MFCC.
@@ -371,6 +404,7 @@ def extract_features(file_path):
     y, sr = librosa.load(file_path, sr=None)
     mfccs = librosa.feature.mfcc(y=y, sr=sr)
     return np.mean(mfccs.T, axis=0)
+
 
 def diarize(file_path):
     """
@@ -390,6 +424,7 @@ def diarize(file_path):
                                                    short_window=0.05,
                                                    lda_dim=0)
     return flags, classes, acc
+
 
 ##videos = get_channel_videos(channel_id)
 ##if not videos:
