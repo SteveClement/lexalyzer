@@ -4,6 +4,9 @@
 [x] write fn: get_video_id * get_video_url
 [x] get_channel_id_from_url: https://www.youtube.com/@lexfridman
 [ ] Train dataset (check how to check if trained)
+[ ] Hash for filenames
+[ ] traindata directory
+[ ] processed flag(s)
 
 # Research notes
 
