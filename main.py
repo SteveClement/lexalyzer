@@ -9,6 +9,7 @@ import shutil
 import sys
 import isodate
 import librosa
+import hashlib
 import numpy as np
 
 from yt_dlp import YoutubeDL
@@ -24,6 +25,26 @@ except ModuleNotFoundError as error:
     sys.exit(1)
 
 DEBUG = False
+
+import hashlib
+
+def hash_filename(filename):
+    """
+    Calculate the BLAKE2b hash digest of a given filename.
+
+    Args:
+        filename (str): The name of the file to hash.
+
+    Returns:
+        str: The hexadecimal representation of the hash digest.
+
+    """
+    # Create a BLAKE2b hash object
+    hasher = hashlib.blake2b(digest_size=32)  # You can adjust `digest_size` as needed
+    # Assuming the filename is a string, encode it to bytes
+    hasher.update(filename.encode('utf-8'))
+    # Return the hex digest of the hash
+    return hasher.hexdigest()
 
 def preprocess_wav(file_path):
     """
