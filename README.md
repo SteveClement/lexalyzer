@@ -4,7 +4,7 @@ LexAlyzer (lex-analyzer) is a powerful tool that analyzes YouTube videos or enti
 
 ## Assumptions
 
-It is assumed
+TBC
 
 # Step 0: Install deps and get environment ready
 
