@@ -1,6 +1,10 @@
 # LexAlyzer
 
-LexAlyzer (lex-analyzer) will analyze a youtube video, or an entire channel with all videos and make speech statistics on who talked for how long.
+LexAlyzer (lex-analyzer) is a powerful tool that analyzes YouTube videos or entire channels, providing detailed speech statistics on who spoke for how long.
+
+## Assumptions
+
+It is assumed
 
 # Step 0: Install deps and get environment ready
 
@@ -17,10 +21,18 @@ poetry run python main.py
 
 # Step 1: Obtain YouTube Data API Key
 
-* Go to the Google Developers Console. https://console.cloud.google.com/
-* Create a new project.
-* Select project
-* View all products -> API Services -> Library
-* Search for "YouTube Data API v3", and enable it for your project.
-* Click "Manage" > "Credentials" & "Create Credentials"
-* Put key into keys.py
+To obtain a YouTube Data API key, follow these steps:
+
+1. Go to the [Google Developers Console](https://console.cloud.google.com/).
+2. Create a new project.
+3. Select the created project.
+4. Click on "View all products" > "API Services" > "Library".
+5. Search for "YouTube Data API v3" and enable it for your project.
+6. Click on "Manage" > "Credentials" > "Create Credentials".
+7. Choose "API key" as the credential type.
+8. Copy the generated API key.
+9. Create a file named `keys.py` in your project directory.
+10. Inside `keys.py`, add the following line of code:
+    ```python
+    YOUTUBE_API_KEY = "<your-api-key>"
+    ```
