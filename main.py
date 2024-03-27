@@ -2,7 +2,7 @@
 """
 Main code for the YouTube Audio analyzer.
 """
-# pylint:disable=E1101
+# pylint:disable=no-member, line-too-long
 import wave
 import os
 import shutil
@@ -113,6 +113,7 @@ def file_info_to_json(filename, hashed_filename, file_size, file_hash, format_de
     # Write the data to a JSON file
     with open(output_file, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=4)
+
 
 def preprocess_wav(file_path):
     """
@@ -462,11 +463,11 @@ def diarize(file_path):
     return flags, classes, acc
 
 
-##videos = get_channel_videos(channel_id)
-##if not videos:
-##    print("No videos found.")
-##else:
-##    print_video_durations(videos)
+# #videos = get_channel_videos(channel_id)
+# #if not videos:
+# #    print("No videos found.")
+# #else:
+# #    print_video_durations(videos)
 
 # Example usage:
 # file_path = 'converted.wav'
@@ -502,7 +503,6 @@ if __name__ == "__main__":
             print("Caught Ctrl-C (SIGINT), exiting gracefully...")
             cleanup(path=f"{OUTPUT_PATH}{CHANNEL_NAME}/")
             seperator()
-            # TODO: any cleanup tasks
             sys.exit(-1)
 
     # file_path="output/test.wav"
