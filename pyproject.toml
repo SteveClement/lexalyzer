@@ -5,6 +5,7 @@ description = "Analyzes podcasts, writes out how many voices are detected and th
 authors = ["Steve Clement <steve@localhost.lu>"]
 license = "GPL v3"
 readme = "README.md"
+package-mode = false
 packages = [{include = "lex_analyzer"}]
 
 [tool.poetry.dependencies]
