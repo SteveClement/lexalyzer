@@ -32,8 +32,7 @@ DEBUG = True
 
 def cleanup(path):
     """
-    Recursively finds and deletes .part and .webm files 
-    in the specified directory.
+    Recursively finds and deletes .part and .webm files in the specified directory.
 
     Args:
         path (str): The path to the directory to search for
