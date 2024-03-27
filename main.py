@@ -1,14 +1,15 @@
+#!/usr/bin/env python
 """
 Main code for the YouTube Audio analyzer.
 """
-#pylint:disable=E1101
-#!/usr/bin/env python
+# pylint:disable=E1101
 import wave
 import os
 import shutil
 import sys
 import hashlib
 import json
+from pathlib import Path
 
 import isodate
 import librosa
@@ -26,7 +27,42 @@ except ModuleNotFoundError as error:
     print(f"An error occurred: {error} - Did you copy keys.py.sample to keys.py?")
     sys.exit(1)
 
-DEBUG = False
+DEBUG = True
+
+
+def cleanup(path):
+    """
+    Recursively finds and deletes .part and .webm files 
+    in the specified directory.
+
+    Args:
+        path (str): The path to the directory to search for
+        .part and .webm files.
+
+    Returns:
+        None
+    """
+    directory = Path(path)
+
+    # Recursively find and delete .part and .webm files
+    for filename in directory.rglob("*.part"):
+        filename.unlink()
+        print(f"Deleted: {filename}")
+    for filename in directory.rglob("*.webm"):
+        filename.unlink()
+        print(f"Deleted: {filename}")
+
+
+def seperator():
+    """
+    Prints a line of dashes that spans the width of the terminal window.
+    """
+    # Get the size of the terminal window
+    columns = shutil.get_terminal_size()[0]
+
+    # Fill the terminal with dashes until the end of the line
+    for _ in range(1):
+        print('-' * columns)
 
 
 def hash_filename(filename):
@@ -458,7 +494,16 @@ if __name__ == "__main__":
     )
 
     for vid_id in VIDEOS:
-        download_audio(vid_id, output_path=f"{OUTPUT_PATH}{CHANNEL_NAME}/", count=10)
+        try:
+            download_audio(vid_id, output_path=f"{OUTPUT_PATH}{CHANNEL_NAME}/", count=10)
+        except KeyboardInterrupt:
+            print()
+            seperator()
+            print("Caught Ctrl-C (SIGINT), exiting gracefully...")
+            cleanup(path=f"{OUTPUT_PATH}{CHANNEL_NAME}/")
+            seperator()
+            # TODO: any cleanup tasks
+            sys.exit(-1)
 
     # file_path="output/test.wav"
     # speaker_durations = detect_speakers_and_durations(file_path)
