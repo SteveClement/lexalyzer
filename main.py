@@ -302,6 +302,12 @@ def download_audio(video_url, output_path="output/", count=-1):
         print("Disk space is below threshold. Aborting download.")
         sys.exit(31)
 
+    # FIXME: Counter is not working as expected
+    if count != -1:
+        max_downloads = count
+    else:
+        max_downloads = 1
+
     ydl_opts = {
         "format": "bestaudio/best",
         "quiet": True,  # Suppresses most of the console output
@@ -335,6 +341,7 @@ def download_audio(video_url, output_path="output/", count=-1):
                 if res != 0:
                     print(f"An error occurred while downloading video: {res}")
                     return None
+                print(f"{count}/{max_downloads} downloads remaining.")
                 count -= 1
                 if count == 0:
                     break
@@ -374,8 +381,9 @@ def analyze_wav(file_path):
         file_path (str): The path to the WAV file.
 
     Returns:
-        dict: A dictionary containing the format details of the WAV file, including the number of channels,
-              sample rate, duration in seconds, and file name.
+        dict: A dictionary containing the format details of the WAV file, 
+              including the number of channels, sample rate, 
+              duration in seconds, and file name.
     """
     # Open the WAV file
     with wave.open(file_path, "rb") as wav_file:
@@ -487,6 +495,7 @@ if __name__ == "__main__":
 
     CHANNEL_NAME = "@LexFridman"  # This should be the name or a part of the custom URL
     OUTPUT_PATH = "output/"
+    COUNT = 3
     CHANNEL_ID = search_channel_by_name(CHANNEL_NAME)
 
     VIDEOS = get_video(
