@@ -27,6 +27,9 @@ eyed3 = "^0.9.7"
 scikit-learn = "^1.4.1.post1"
 
 
+[tool.poetry.group.dev.dependencies]
+wavefile = "^1.6.2"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

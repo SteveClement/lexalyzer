@@ -2408,6 +2408,23 @@ socks = ["pysocks (>=1.5.6,!=1.5.7,<2.0)"]
 zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
+name = "wavefile"
+version = "1.6.2"
+description = "Pythonic wave file reader and writer"
+optional = false
+python-versions = "*"
+files = [
+    {file = "wavefile-1.6.2-py3-none-any.whl", hash = "sha256:9004f762daae19854e42e7f11e3bc7ed0b07774e032c4f08aa6a8e4a54d27ed1"},
+    {file = "wavefile-1.6.2.tar.gz", hash = "sha256:e5d890fef3045adc0b7121ce9d602e3386e42f674016e3d3e276077b7067ad12"},
+]
+
+[package.dependencies]
+numpy = "*"
+
+[package.extras]
+examples = ["PyAudio"]
+
+[[package]]
 name = "wcwidth"
 version = "0.2.13"
 description = "Measures the displayed width of unicode strings in a terminal"
@@ -2523,4 +2540,4 @@ websockets = ">=12.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "4efe0b1951ffc649f0c1a974579ec03a1ac737214d4d6f0fbaf45922ab9e0454"
+content-hash = "e7f00a75f13704f08ba474872e022b38b67fa6adc31d0c2cc3410c4ff44cbb7e"
