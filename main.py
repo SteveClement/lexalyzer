@@ -493,18 +493,31 @@ if __name__ == "__main__":
     # video_url = sys.argv[1]
     # video_url = 'https://www.youtube.com/watch?v=jrIJa2-niBM'
 
+    # TODO implement training for diacritization
+    TRAINING = False
     CHANNEL_NAME = "@LexFridman"  # This should be the name or a part of the custom URL
+    # TODO: Implement downloading only one video properly
+    CHANNEL_VIDEO = "https://www.youtube.com/watch?v=0m3hGZvD-0s"
+    CHANNEL_VIDEO = ["0m3hGZvD-0s", "1WpqQfmzBGY", "7Sk6lTLSZcA"]
     OUTPUT_PATH = "output/"
-    COUNT = 3
+
+    if CHANNEL_VIDEO:
+        COUNT = len(CHANNEL_VIDEO)
+    else:
+        COUNT = 3
     CHANNEL_ID = search_channel_by_name(CHANNEL_NAME)
 
-    VIDEOS = get_video(
-        get_channel_videos(search_channel_by_name(CHANNEL_NAME)), mode="id"
-    )
+    if not CHANNEL_VIDEO:
+        VIDEOS = get_video(
+            get_channel_videos(search_channel_by_name(CHANNEL_NAME)), mode="id"
+        )
+    else:
+        VIDEOS = CHANNEL_VIDEO
+    print(VIDEOS)
 
     for vid_id in VIDEOS:
         try:
-            download_audio(vid_id, output_path=f"{OUTPUT_PATH}{CHANNEL_NAME}/", count=10)
+            download_audio(vid_id, output_path=f"{OUTPUT_PATH}{CHANNEL_NAME}/", count=COUNT)
         except KeyboardInterrupt:
             print()
             seperator()
